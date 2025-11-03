@@ -1,0 +1,29 @@
+[
+  {
+    "version": "8.2.29",
+    "dist": {
+      "windows_x64": "https://windows.php.net/downloads/releases/php-8.2.29-nts-Win32-vs16-x64.zip",
+      "windows_x86": "https://windows.php.net/downloads/releases/php-8.2.29-nts-Win32-vs16-x86.zip",
+      "linux_x64": "https://ghcr.io/v2/homebrew/core/php/8.2.29/blobs/sha256:7c7f1a3d9e48a736484e5e4d251d542d99d3e8574167e41b9c9e830f3689c1d1",
+      "macos_x64": "https://ghcr.io/v2/homebrew/core/php/8.2.29/blobs/sha256:4a4d8c5f5f401f7871b67f3c4c9d5d886918809c91f13b6928e46e8c78c3b5d2"
+    }
+  },
+  {
+    "version": "8.3.27",
+    "dist": {
+      "windows_x64": "https://windows.php.net/downloads/releases/php-8.3.27-nts-Win32-vs16-x64.zip",
+      "windows_x86": "https://windows.php.net/downloads/releases/php-8.3.27-nts-Win32-vs16-x86.zip",
+      "linux_x64": "https://ghcr.io/v2/homebrew/core/php/8.3.27/blobs/sha256:739e83054116c9e0d16d1f5e8f192b6a503a483a99e82109861611c08e8b0d39",
+      "macos_x64": "https://ghcr.io/v2/homebrew/core/php/8.3.27/blobs/sha256:0d91d90c9b3e0c03b12386a7d18801b63564e9a4f48037c86576b539c38c039b"
+    }
+  },
+  {
+    "version": "8.4.14",
+    "dist": {
+      "windows_x64": "https://windows.php.net/downloads/releases/php-8.4.14-nts-Win32-vs17-x64.zip",
+      "windows_x86": "https://windows.php.net/downloads/releases/php-8.4.14-nts-Win32-vs17-x86.zip",
+      "linux_x64": "https://ghcr.io/v2/homebrew/core/php/8.4.14/blobs/sha256:c72a6a0e633d96924294a86617a264a93540c9535c5c165f1c9c41764619b165",
+      "macos_x64": "https://ghcr.io/v2/homebrew/core/php/8.4.14/blobs/sha256:2b78112d7c57b337c73c3d5e2366887955c4d36f9c968c92a4e9863c1930182c"
+    }
+  }
+]

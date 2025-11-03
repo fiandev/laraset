@@ -1,0 +1,18 @@
+{
+  "name": "laraset",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "commander": "^14.0.2",
+    "semver": "^7.7.3",
+    "zlib": "^1.0.5"
+  }
+}
