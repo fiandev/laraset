@@ -1,0 +1,42 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'README.md'
+      - 'docs/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'README.md'
+      - 'docs/**'
+
+jobs:
+  check-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Check README links
+      run: |
+        echo "Checking README.md for broken links..."
+        if command -v markdown-link-check >/dev/null 2>&1; then
+          markdown-link-check README.md
+        else
+          echo "markdown-link-check not available, skipping link check"
+        fi
+        
+    - name: Validate package.json
+      run: |
+        echo "Validating package.json..."
+        node -e "JSON.parse(require('fs').readFileSync('package.json', 'utf8'))"
+        
+    - name: Check CLI help output
+      run: |
+        echo "Testing CLI help output..."
+        npm ci
+        npm run build
+        node dist/index.js --help

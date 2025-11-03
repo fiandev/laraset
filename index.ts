@@ -3,10 +3,7 @@
 import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
-import { promisify } from "util";
 import { Command } from "commander";
-
-const execAsync = promisify(exec);
 
 interface ComposerData {
   require?: {

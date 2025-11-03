@@ -12,7 +12,9 @@
     "dev": "tsc --watch",
     "start": "node dist/index.js",
     "prepublishOnly": "npm run build",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run build && node dist/index.js --help",
+    "lint": "tsc --noEmit",
+    "prepare": "npm run build"
   },
   "keywords": [
     "laravel",
@@ -33,7 +35,11 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "semantic-release": "^24.0.0",
+    "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/git": "^10.0.0",
+    "@semantic-release/github": "^10.0.0"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
