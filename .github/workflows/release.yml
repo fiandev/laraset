@@ -27,12 +27,8 @@ jobs:
         with:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
+          scope: "@fiandev"
       - run: npm ci
-      - run: VERSION=$(node -p "require('./package.json').version")
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
-        if: github.event_name == 'release' && github.event.action == 'published' && success() && !contains(fromJSON(env.VERSION_CHECK || '[]'), github.event.release.tag_name)
       - run: |
           VERSION=$(node -p "require('./package.json').version")
           npm view @fiandev/laraset@$VERSION || npm publish
@@ -47,9 +43,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          scope: "@fiandev"
       - run: npm ci
       - run: |
           VERSION=$(node -p "require('./package.json').version")
-          npm view @fiandev/laraset@$VERSION || npm publish
+          npm view @fiandev/laraset@$VERSION || npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
