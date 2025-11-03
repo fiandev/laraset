@@ -131,30 +131,67 @@ async function main() {
   // Debug: Check what's in the Docker container
   console.log("↓ Debugging Docker container contents...");
   try {
-    await runCommand(
-      `${dockerRunCommand} ls -la /app`,
-      repoDir,
-    );
+    await runCommand(`${dockerRunCommand} ls -la /app`, repoDir);
   } catch (debugError) {
     console.warn("Debug command failed, continuing anyway...");
   }
 
-  try {
-    await runCommand(
-      `php artisan key:generate --force`,
-      repoDir,
+  // C. KONFIGURASI ULANG .ENV UNTUK SQLITE
+  console.log("↓ Configuring .env to use SQLite database...");
+
+  // 1. Pastikan folder 'database' ada dan buat file sqlite kosong
+  const databaseDir = path.join(repoDir, "database");
+  if (!fs.existsSync(databaseDir)) {
+    fs.mkdirSync(databaseDir);
+    console.log(`   - Created directory: ${path.join(repoName, "database")}`);
+  }
+  const sqliteFilePath = path.join(databaseDir, "database.sqlite");
+  if (!fs.existsSync(sqliteFilePath)) {
+    fs.writeFileSync(sqliteFilePath, ""); // Create empty file
+    console.log(
+      `   - Created empty SQLite file: ${path.join(repoName, "database", "database.sqlite")}`,
     );
+  }
+
+  // 2. Baca dan modifikasi .env
+  let envContent = fs.readFileSync(envPath, "utf-8");
+
+  // Ganti konfigurasi DB lama dengan SQLite
+  // Kita ganti variabel DB_ yang ada
+  envContent = envContent.replace(
+    /^DB_CONNECTION=.*$/m,
+    "DB_CONNECTION=sqlite",
+  );
+  // Path DB_DATABASE harus berupa path di dalam container Docker (/app/...)
+  envContent = envContent.replace(
+    /^DB_DATABASE=.*$/m,
+    "DB_DATABASE=/database/database.sqlite",
+  );
+  // Komen atau hapus variabel yang tidak diperlukan oleh SQLite
+  envContent = envContent.replace(/^DB_HOST=.*$/m, "# DB_HOST=");
+  envContent = envContent.replace(/^DB_PORT=.*$/m, "# DB_PORT=");
+  envContent = envContent.replace(/^DB_USERNAME=.*$/m, "DB_USERNAME=");
+  envContent = envContent.replace(/^DB_PASSWORD=.*$/m, "DB_PASSWORD=");
+
+  fs.writeFileSync(envPath, envContent);
+  runCommand("touch database.sqlite", path.join(repoDir, "database"));
+
+  console.log("   - .env updated for SQLite configuration.");
+
+  try {
+    await runCommand(`php artisan key:generate --force`, repoDir);
 
     // E. Migrate menggunakan Docker (opsional, bisa gagal jika tidak ada DB)
     console.log("↓ Running migrations via Docker...");
     try {
-      await runCommand(
-        `php artisan migrate --force`,
-        repoDir,
-      );
+      await runCommand(`php artisan migrate --force`, repoDir);
     } catch (migrateError) {
-      console.warn("⚠️  Migration failed (this is normal if no database is configured)");
-      console.warn("   You can run migrations manually after setting up your database:");
+      console.warn(
+        "⚠️  Migration failed (this is normal if no database is configured)",
+      );
+      console.warn(
+        "   You can run migrations manually after setting up your database:",
+      );
       console.warn(`   cd ${repoName} && php artisan migrate`);
     }
   } catch (keyError) {
@@ -190,6 +227,6 @@ main().catch((err) => {
     if (fs.existsSync(path.join(baseDir, "composer-setup.php"))) {
       fs.unlinkSync(path.join(baseDir, "composer-setup.php"));
     }
-  } catch { }
+  } catch {}
   process.exit(1);
 });
