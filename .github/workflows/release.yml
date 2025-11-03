@@ -28,6 +28,28 @@ jobs:
           node-version: 20
           registry-url: https://npm.pkg.github.com/
       - run: npm ci
+      - run: VERSION=$(node -p "require('./package.json').version")
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        if: github.event_name == 'release' && github.event.action == 'published' && success() && !contains(fromJSON(env.VERSION_CHECK || '[]'), github.event.release.tag_name)
+      - run: |
+          VERSION=$(node -p "require('./package.json').version")
+          npm view @fiandev/laraset@$VERSION || npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+  publish-npm:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: |
+          VERSION=$(node -p "require('./package.json').version")
+          npm view @fiandev/laraset@$VERSION || npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
