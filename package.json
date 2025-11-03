@@ -1,18 +1,55 @@
 {
-  "name": "laraset",
-  "module": "index.ts",
-  "type": "module",
-  "private": true,
-  "devDependencies": {
-    "@types/bun": "latest"
+  "name": "@fiandev/laraset",
+  "version": "1.0.0",
+  "description": "Automated Laravel project setup with Docker and SQLite",
+  "main": "dist/index.js",
+  "bin": {
+    "laraset": "dist/index.js"
   },
-  "peerDependencies": {
-    "typescript": "^5"
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "laravel",
+    "docker",
+    "setup",
+    "automation",
+    "php",
+    "sqlite"
+  ],
+  "author": "fiandev",
+  "license": "MIT",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "private": false,
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
   },
   "dependencies": {
     "adm-zip": "^0.5.16",
     "commander": "^14.0.2",
     "semver": "^7.7.3",
     "zlib": "^1.0.5"
-  }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fiandev/laraset.git"
+  },
+  "bugs": {
+    "url": "https://github.com/fiandev/laraset/issues"
+  },
+  "homepage": "https://github.com/fiandev/laraset#readme"
 }

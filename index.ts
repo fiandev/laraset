@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
@@ -13,7 +15,8 @@ interface ComposerData {
   };
 }
 
-// 🛠️ Fungsi runCommand yang Diperbaiki: Debug lebih detail
+// TODO: Improve error handling and logging for command execution
+// FIXME: Consider using a more robust process execution library
 async function runCommand(command: string, cwd?: string) {
   return new Promise<string>((resolve, reject) => {
     console.log(`Executing: ${command}`);
@@ -32,6 +35,7 @@ async function runCommand(command: string, cwd?: string) {
   });
 }
 
+// TODO: Add support for Windows command checking
 async function checkCommandExist(command: string) {
   try {
     await runCommand(`which ${command}`);
@@ -41,6 +45,8 @@ async function checkCommandExist(command: string) {
   }
 }
 
+// TODO: Add validation for git URL format
+// TODO: Support for different database types beyond SQLite
 async function main() {
   const program = new Command();
   program.option("--url <repo>", "Git repository URL to clone");
@@ -52,7 +58,7 @@ async function main() {
     process.exit(1);
   }
 
-  // 1. Cek Docker
+  // NOTE: Check Docker availability
   const dockerExists = await checkCommandExist("docker");
   if (!dockerExists) {
     console.error(
@@ -61,7 +67,7 @@ async function main() {
     process.exit(1);
   }
 
-  // 2. Clone Repository
+  // NOTE: Clone repository if not exists
   const repoName = path.basename(opts.url, ".git");
   const repoDir = path.resolve(repoName);
 
@@ -70,7 +76,7 @@ async function main() {
     await runCommand(`git clone ${opts.url}`);
   }
 
-  // 3. Tentukan Versi PHP untuk Docker
+  // NOTE: Determine PHP version from composer.json
   const composerPath = path.join(repoDir, "composer.json");
   if (!fs.existsSync(composerPath)) {
     console.error("composer.json not found in repo.");
@@ -88,34 +94,35 @@ async function main() {
   console.log(`Detected PHP requirement: ${requiredPHP || "N/A"}`);
   console.log(`✔ Using Docker image: ${dockerImage}`);
 
-  // 4. Persiapan Perintah Docker Volume Mount
+  // NOTE: Prepare Docker volume mount command
   const dockerRunCommand = `docker run --rm -v "${repoDir}:/app" -w /app ${dockerImage}`;
 
-  // 5. Setup Laravel
+  // NOTE: Laravel setup process
+  // TODO: Add progress indicators for long-running operations
 
-  // A. Unduh Composer.phar langsung ke Host
+  // STEP 1: Download Composer.phar to host
   console.log("↓ Downloading Composer.phar...");
   await runCommand(
     `curl -L -sS https://getcomposer.org/download/latest-stable/composer.phar -o ${path.join(repoDir, "composer.phar")}`,
   );
 
-  // B. Jalankan composer install
+  // STEP 2: Run composer install
   console.log(
     "↓ Running composer install. Dependencies will be written to local 'vendor' folder.",
   );
   await runCommand(`php composer.phar install --no-interaction`, repoDir);
 
-  // C. Setup Environment dan Artisan
+  // STEP 3: Setup environment and artisan
   const envPath = path.join(repoDir, ".env");
   if (!fs.existsSync(envPath)) {
     console.log("↓ Copying .env example (Local file operation)...");
     await runCommand(`cp .env.example .env`, repoDir);
   }
 
-  // D. Generate key menggunakan Docker
+  // STEP 4: Generate application key using Docker
   console.log("↓ Generating application key via Docker...");
 
-  // Check if artisan file exists
+  // FIXME: Handle artisan file existence check more gracefully
   const artisanPath = path.join(repoDir, "artisan");
   if (!fs.existsSync(artisanPath)) {
     console.error("❌ artisan file not found in Laravel project");
@@ -128,7 +135,7 @@ async function main() {
     console.log(`✓ artisan file found at: ${artisanPath}`);
   }
 
-  // Debug: Check what's in the Docker container
+  // DEBUG: Check Docker container contents
   console.log("↓ Debugging Docker container contents...");
   try {
     await runCommand(`${dockerRunCommand} ls -la /app`, repoDir);
@@ -136,10 +143,10 @@ async function main() {
     console.warn("Debug command failed, continuing anyway...");
   }
 
-  // C. KONFIGURASI ULANG .ENV UNTUK SQLITE
+  // STEP 5: Configure .env for SQLite database
   console.log("↓ Configuring .env to use SQLite database...");
 
-  // 1. Pastikan folder 'database' ada dan buat file sqlite kosong
+  // NOTE: Ensure database directory exists and create empty SQLite file
   const databaseDir = path.join(repoDir, "database");
   if (!fs.existsSync(databaseDir)) {
     fs.mkdirSync(databaseDir);
@@ -153,21 +160,21 @@ async function main() {
     );
   }
 
-  // 2. Baca dan modifikasi .env
+  // NOTE: Read and modify .env file
   let envContent = fs.readFileSync(envPath, "utf-8");
 
-  // Ganti konfigurasi DB lama dengan SQLite
-  // Kita ganti variabel DB_ yang ada
+  // FIXME: Use more robust regex patterns for env variable replacement
+  // Replace old DB configuration with SQLite
   envContent = envContent.replace(
     /^DB_CONNECTION=.*$/m,
     "DB_CONNECTION=sqlite",
   );
-  // Path DB_DATABASE harus berupa path di dalam container Docker (/app/...)
+  // DB_DATABASE path should be inside Docker container (/app/...)
   envContent = envContent.replace(
     /^DB_DATABASE=.*$/m,
     "DB_DATABASE=/database/database.sqlite",
   );
-  // Komen atau hapus variabel yang tidak diperlukan oleh SQLite
+  // Comment out or remove variables not needed by SQLite
   envContent = envContent.replace(/^DB_HOST=.*$/m, "# DB_HOST=");
   envContent = envContent.replace(/^DB_PORT=.*$/m, "# DB_PORT=");
   envContent = envContent.replace(/^DB_USERNAME=.*$/m, "DB_USERNAME=");
@@ -181,7 +188,7 @@ async function main() {
   try {
     await runCommand(`php artisan key:generate --force`, repoDir);
 
-    // E. Migrate menggunakan Docker (opsional, bisa gagal jika tidak ada DB)
+    // STEP 6: Run migrations using Docker (optional, may fail if no DB)
     console.log("↓ Running migrations via Docker...");
     try {
       await runCommand(`php artisan migrate --force`, repoDir);
@@ -199,7 +206,7 @@ async function main() {
     throw keyError;
   }
 
-  // F. Bersihkan composer.phar lokal
+  // STEP 7: Clean up local composer.phar
   console.log("↓ Cleaning up local composer.phar file.");
   fs.unlinkSync(path.join(repoDir, "composer.phar"));
 
@@ -212,9 +219,11 @@ async function main() {
   console.log(`======================================================`);
 }
 
+// TODO: Improve error handling and cleanup process
+// FIXME: Avoid re-parsing command line arguments in error handler
 main().catch((err) => {
   console.error("Error during setup:", err);
-  // Cleanup composer.phar dan composer-setup.php jika gagal
+  // NOTE: Cleanup composer.phar and composer-setup.php if setup fails
   try {
     const program = new Command();
     program.option("--url <repo>", "Git repository URL to clone");
