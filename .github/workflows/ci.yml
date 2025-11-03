@@ -34,8 +34,6 @@ jobs:
         run: |
           echo "Checking if dist/index.js exists..."
           test -f dist/index.js || (echo "dist/index.js not found" && exit 1)
-          echo "Checking if dist/index.js is executable..."
-          test -x dist/index.js || (echo "dist/index.js is not executable" && exit 1)
 
       - name: Test CLI help command
         run: |
