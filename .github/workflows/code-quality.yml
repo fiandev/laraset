@@ -30,10 +30,13 @@ jobs:
         run: |
           echo "Checking for security vulnerabilities..."
           npm audit --json > audit-report.json || true
-          if [ -s audit-report.json ]; then
+          total=$(jq '.metadata.vulnerabilities.total' audit-report.json)
+          if [ "$total" -gt 0 ]; then
             echo "Security vulnerabilities found:"
             cat audit-report.json
             exit 1
+          else
+            echo "No security vulnerabilities found."
           fi
 
   codeql:
