@@ -34,7 +34,7 @@
   "private": false,
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/node": "^20.0.0",
+    "@types/node": "^24.10.0",
     "typescript": "^5.0.0",
     "semantic-release": "^24.0.0",
     "@semantic-release/changelog": "^6.0.0",
